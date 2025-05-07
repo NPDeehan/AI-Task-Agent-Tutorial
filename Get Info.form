@@ -1,0 +1,51 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.7.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "b46fab0"
+  },
+  "schemaVersion": 18,
+  "id": "get-info-1m766nh",
+  "components": [
+    {
+      "text": "# Question from AI",
+      "type": "text",
+      "layout": {
+        "row": "Row_1nalhtf",
+        "columns": null
+      },
+      "id": "Field_0vqhny1"
+    },
+    {
+      "text": "{{aiquestion}}",
+      "type": "text",
+      "layout": {
+        "row": "Row_126wh5o",
+        "columns": null
+      },
+      "id": "Field_0noh11b"
+    },
+    {
+      "label": "Answer",
+      "type": "textarea",
+      "layout": {
+        "row": "Row_0kvwwzy",
+        "columns": null
+      },
+      "id": "Field_0e8kd2c",
+      "key": "humanAnswer"
+    },
+    {
+      "label": "If a document would be useful here",
+      "type": "filepicker",
+      "layout": {
+        "row": "Row_0jky72y",
+        "columns": null
+      },
+      "id": "Field_0qh8onj",
+      "key": "personDocument"
+    }
+  ],
+  "type": "default"
+}

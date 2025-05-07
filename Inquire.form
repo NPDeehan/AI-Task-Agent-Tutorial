@@ -1,0 +1,52 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.7.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "b46fab0"
+  },
+  "schemaVersion": 18,
+  "id": "Form_0f0pmmg",
+  "components": [
+    {
+      "text": "# What do you want to Say?",
+      "type": "text",
+      "layout": {
+        "row": "Row_12lk8vc",
+        "columns": null
+      },
+      "id": "Field_1so2h3l"
+    },
+    {
+      "label": "To whom does this concern",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_0ufws1w",
+        "columns": null
+      },
+      "id": "Field_1165o4c",
+      "key": "person"
+    },
+    {
+      "label": "What do you want to say?",
+      "type": "textarea",
+      "layout": {
+        "row": "Row_0yvclbx",
+        "columns": null
+      },
+      "id": "Field_1gj6t3h",
+      "key": "message"
+    },
+    {
+      "label": "Who are you?",
+      "type": "textfield",
+      "layout": {
+        "row": "Row_19l8kyq",
+        "columns": null
+      },
+      "id": "Field_0s1gv9e",
+      "key": "sender"
+    }
+  ],
+  "type": "default"
+}
