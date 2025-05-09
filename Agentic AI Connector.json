@@ -1,11 +1,10 @@
 {
   "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
-  "name": "agenticai-aiagent-outbound-connector",
-  "id": "c69bc029-1313-4d4d-8ba5-3d6df83e4f41",
-  "version": 1746616306158,
-  "description": "AI Agent connector",
+  "name": "Agentic AI Connector",
+  "id": "7c3b356e-49ec-42c1-b9ac-c9c28098094c",
+  "version": 1746801070630,
   "metadata": {
-    "keywords": []
+    "created": 1746626058334
   },
   "category": {
     "id": "connectors",
@@ -27,10 +26,6 @@
       "label": "Authentication"
     },
     {
-      "id": "context",
-      "label": "Context"
-    },
-    {
       "id": "systemPrompt",
       "label": "System Prompt"
     },
@@ -40,19 +35,23 @@
     },
     {
       "id": "tools",
-      "label": "Tools"
+      "label": "Tools",
+      "tooltip": "Configuration of tools which should be made available to the agent."
     },
     {
       "id": "memory",
-      "label": "Memory"
+      "label": "Memory",
+      "tooltip": "Configuration of the Agent's short-term memory."
     },
     {
-      "id": "guardrails",
-      "label": "Guardrails"
+      "id": "limits",
+      "label": "Limits"
     },
     {
       "id": "parameters",
-      "label": "Parameters"
+      "label": "Model Parameters",
+      "tooltip": "Configuration of common model parameters to optimize and fine-tune LLM responses.",
+      "openByDefault": false
     },
     {
       "id": "connector",
@@ -82,8 +81,9 @@
     },
     {
       "id": "provider.type",
-      "label": "Provider",
-      "description": "Specify the model provider to use",
+      "label": "Model Provider",
+      "description": "Specify the LLM provider to use.",
+      "value": "bedrock",
       "group": "model",
       "binding": {
         "name": "provider.type",
@@ -125,6 +125,7 @@
     {
       "id": "provider.anthropic.model.model",
       "label": "Model",
+      "description": "Specify the model ID. Details in the <a href=\"https://docs.anthropic.com/en/docs/about-claude/models/all-models\" target=\"_blank\">documentation</a>.",
       "optional": false,
       "value": "claude-3-5-sonnet-20240620",
       "constraints": {
@@ -162,7 +163,8 @@
         "equals": "bedrock",
         "type": "simple"
       },
-      "type": "String"
+      "type": "String",
+      "value": "{{secrets.AWS_REGION}}"
     },
     {
       "id": "provider.bedrock.endpoint",
@@ -184,6 +186,7 @@
     {
       "id": "provider.bedrock.model.model",
       "label": "Model",
+      "description": "Specify the model ID. Details in the <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html\" target=\"_blank\">documentation</a>.",
       "optional": false,
       "value": "anthropic.claude-3-5-sonnet-20240620-v1:0",
       "constraints": {
@@ -222,6 +225,7 @@
     {
       "id": "provider.openai.model.model",
       "label": "Model",
+      "description": "Specify the model ID. Details in the <a href=\"https://platform.openai.com/docs/models\" target=\"_blank\">documentation</a>.",
       "optional": false,
       "value": "gpt-4o",
       "constraints": {
@@ -315,7 +319,8 @@
           }
         ]
       },
-      "type": "String"
+      "type": "String",
+      "value": "{{secrets.AWS_ACCESS_KEY}}"
     },
     {
       "id": "provider.bedrock.authentication.secretKey",
@@ -345,7 +350,8 @@
           }
         ]
       },
-      "type": "String"
+      "type": "String",
+      "value": "{{secrets.AWS_SECRET_KEY}}"
     },
     {
       "id": "provider.openai.authentication.apiKey",
@@ -370,7 +376,7 @@
     {
       "id": "provider.openai.authentication.organization",
       "label": "Organization",
-      "description": "For members of multiple organizations. Details in the <a href=\"https://platform.openai.com/docs/api-reference/requesting-organization\" target=\"_blank\">OpenAI documentation</a>.",
+      "description": "For members of multiple organizations. Details in the <a href=\"https://platform.openai.com/docs/api-reference/requesting-organization\" target=\"_blank\">documentation</a>.",
       "optional": true,
       "feel": "optional",
       "group": "authentication",
@@ -404,25 +410,10 @@
       "type": "String"
     },
     {
-      "id": "data.agentContext",
-      "label": "Agent Context",
-      "description": "The agent context variable containing the conversation memory",
-      "optional": false,
-      "constraints": {
-        "notEmpty": true
-      },
-      "feel": "required",
-      "group": "context",
-      "binding": {
-        "name": "data.context",
-        "type": "zeebe:input"
-      },
-      "type": "Text"
-    },
-    {
       "id": "data.systemPrompt.prompt",
       "label": "System Prompt",
       "optional": false,
+      "value": "You are **TaskAgent**, a helpful, generic chat agent that can help someone who has a movie idea to flesh that idea out with a plot, title and other aspects that could make this movie a reality. You can help diretly **and**  by using any tools explicitly provided to you at runtime.\n\n────────────────────────────────\n# 0. CONTEXT — WHO IS “USER”?\n────────────────────────────────\n• **Every incoming user message is from the customer.**  \n• Treat “user” and “customer” as the same person throughout the conversation.  \n• Internal staff or experts communicate only through the expert-communication tool(s).\n\n────────────────────────────────\n# 1. MANDATORY TOOL-DRIVEN WORKFLOW\n────────────────────────────────\nFor **every** customer request, follow this exact sequence:\n\n1. **Inspect** the full list of available tools.  \n2. **Evaluate** each tool’s relevance.  \n3. **Invoke at least one relevant tool** *before* replying to the customer.  \n   • Call the same tool multiple times with different inputs if useful.  \n   • If no domain-specific tool fits, you **must**  \n     a. call a generic search / knowledge-retrieval tool \n   • Any decision to skip a potentially helpful tool must be justified inside `<reflection>`.  \n4. **Communication mandate**:  \n   • To seek guidance from an **expert**, call the *ask_for_feedback tool*.  \n• When you have the movie idea solidified, contact the customer via email, using  the *send_an_email tool*.  \n5. **Never** invent or call tools that are not in the supplied list.  \n6. After exhausting every relevant tool—and expert escalation if required—if you still cannot help, reply exactly with  \n   `ERROR: <brief explanation>`.\n\n────────────────────────────────\n# 2. DATA PRIVACY & LOOKUPS\n────────────────────────────────\nWhen real-person data or contact details are involved, do **not** fabricate information.  \nUse the appropriate lookup tools; if data cannot be retrieved, reply with the standard error message above.\n\n────────────────────────────────\n# 3. CHAIN-OF-THOUGHT FORMAT  (MANDATORY BEFORE EVERY TOOL CALL)\n────────────────────────────────\nWrap minimal, inspectable reasoning in *exactly* this XML template:\n\n<thinking>\n  <context>…briefly state the customer’s need and current state…</context>\n  <reflection>…list candidate tools, justify which you will call next and why…</reflection>\n</thinking>\n\nReveal **no** additional private reasoning outside these tags.\n\n────────────────────────────────\n# 4. SATISFACTION CONFIRMATION, FINAL EMAIL & TASK RESOLUTION\n────────────────────────────────\nA. When you believe the request is fulfilled, end your reply with a confirmation question such as  \n   “Does this fully resolve your issue?”  \nB. If the customer answers positively (e.g. “yes”, “that’s perfect”, “thanks”):  \n   1. **Immediately call** the designated email-delivery tool (e.g. `send_email`, `send_customer_msg`) with an appropriate subject and body that contains the final solution.  \n   2. After that tool call, your *next* chat message must contain **only** this word:  \n      RESOLVED  \nC. If the customer’s very next message already expresses satisfaction without the confirmation question, do step B immediately.  \nD. Never append anything after “RESOLVED”.  \nE. If no email-delivery tool exists, escalate to the expert-communication tool; if the expert confirms none exists, reply with an error as described in §1-6.\n\n",
       "constraints": {
         "notEmpty": true
       },
@@ -437,6 +428,7 @@
     {
       "id": "data.systemPrompt.parameters",
       "label": "System Prompt Parameters",
+      "description": "Map of parameters which can be used in <code>{{parameter}}</code> format in the prompt text.",
       "optional": true,
       "feel": "required",
       "group": "systemPrompt",
@@ -444,6 +436,7 @@
         "name": "data.systemPrompt.parameters",
         "type": "zeebe:input"
       },
+      "tooltip": "Default parameters provided by the integration: <code>current_date</code>, <code>current_time</code>, <code>current_date_time</code>",
       "type": "String"
     },
     {
@@ -459,11 +452,13 @@
         "name": "data.userPrompt.prompt",
         "type": "zeebe:input"
       },
-      "type": "Text"
+      "type": "Text",
+      "value": "=prompt"
     },
     {
       "id": "data.userPrompt.parameters",
       "label": "User Prompt Parameters",
+      "description": "Map of parameters which can be used in <code>{{parameter}}</code> format in the prompt text.",
       "optional": true,
       "feel": "required",
       "group": "userPrompt",
@@ -471,6 +466,7 @@
         "name": "data.userPrompt.parameters",
         "type": "zeebe:input"
       },
+      "tooltip": "Default parameters provided by the integration: <code>current_date</code>, <code>current_time</code>, <code>current_date_time</code>",
       "type": "String"
     },
     {
@@ -489,7 +485,7 @@
     },
     {
       "id": "data.tools.containerElementId",
-      "label": "Ad-hoc subprocess ID containing tools",
+      "label": "Ad-hoc subprocess ID",
       "description": "The ID of the subprocess containing the tools to be called",
       "optional": true,
       "feel": "optional",
@@ -498,7 +494,8 @@
         "name": "data.tools.containerElementId",
         "type": "zeebe:input"
       },
-      "type": "String"
+      "type": "String",
+      "value": "niallsTools"
     },
     {
       "id": "data.tools.toolCallResults",
@@ -511,13 +508,32 @@
         "name": "data.tools.toolCallResults",
         "type": "zeebe:input"
       },
-      "type": "Text"
+      "type": "Text",
+      "value": "=toolCallResults"
+    },
+    {
+      "id": "data.agentContext",
+      "label": "Agent Context",
+      "description": "The agent context variable containing all relevant data for the agent to support the feedback loop between user requests, tool calls and LLM responses. Make sure this variable points to the <code>context</code> variable which is returned from the agent response.",
+      "optional": false,
+      "constraints": {
+        "notEmpty": true
+      },
+      "feel": "required",
+      "group": "memory",
+      "binding": {
+        "name": "data.context",
+        "type": "zeebe:input"
+      },
+      "type": "Text",
+      "value": "=agent.context"
     },
     {
       "id": "data.memory.maxMessages",
-      "label": "Maximum amount of messages to keep in memory",
+      "label": "Maximum messages",
+      "description": "Maximum amount of messages to keep in short-term/conversation memory.",
       "optional": false,
-      "value": 20,
+      "value": "=20",
       "constraints": {
         "notEmpty": true
       },
@@ -530,17 +546,18 @@
       "type": "Number"
     },
     {
-      "id": "data.guardrails.maxModelCalls",
-      "label": "Maximum number of calls to the model",
+      "id": "data.limits.maxModelCalls",
+      "label": "Maximum model calls",
+      "description": "Maximum number of calls to the model as a safety limit to prevent infinite loops.",
       "optional": false,
-      "value": 10,
+      "value": "=10",
       "constraints": {
         "notEmpty": true
       },
       "feel": "static",
-      "group": "guardrails",
+      "group": "limits",
       "binding": {
-        "name": "data.guardrails.maxModelCalls",
+        "name": "data.limits.maxModelCalls",
         "type": "zeebe:input"
       },
       "type": "Number"
@@ -628,7 +645,8 @@
         "equals": "bedrock",
         "type": "simple"
       },
-      "type": "Number"
+      "type": "Number",
+      "value": "=5000"
     },
     {
       "id": "provider.bedrock.model.parameters.temperature",
@@ -645,7 +663,8 @@
         "equals": "bedrock",
         "type": "simple"
       },
-      "type": "Number"
+      "type": "Number",
+      "value": "=0.2"
     },
     {
       "id": "provider.bedrock.model.parameters.topP",
@@ -662,7 +681,8 @@
         "equals": "bedrock",
         "type": "simple"
       },
-      "type": "Number"
+      "type": "Number",
+      "value": "=0.1"
     },
     {
       "id": "provider.bedrock.model.parameters.topK",
@@ -782,7 +802,8 @@
         "key": "resultVariable",
         "type": "zeebe:taskHeader"
       },
-      "type": "String"
+      "type": "String",
+      "value": "agent"
     },
     {
       "id": "resultExpression",
