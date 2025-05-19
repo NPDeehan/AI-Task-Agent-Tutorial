@@ -3,6 +3,8 @@
 ## Overview
 This BPMN process defines a Message Delivery Service that uses AI-powered task agents and various tools to handle customer requests and send messages through different channels.
 
+![Process](./img/HawkHelperProcess.gif)
+
 ## Process Flow
 1. The process starts with a user input.
 2. A script task creates a prompt based on the input.
